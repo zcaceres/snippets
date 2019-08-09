@@ -31,3 +31,12 @@ const convertStrToObject = str => {
   }
 }
 
+
+export const orderArrayByProp = (arr, prop) => {
+  return arr.sort((first, second) => {
+    if (first[prop] < second[prop]) return -1
+    else if (first[prop] > second[prop]) return 1
+    else return 0
+  })
+}
+
