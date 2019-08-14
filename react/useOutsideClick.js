@@ -1,19 +1,30 @@
-import { useEffect } from "react"
+import {
+  useEffect
+} from 'react'
+import ReactDOM from 'react-dom'
 
-const useOutsideClick = (ref, callback) => {
+const useOnOutsideClick = (ref, callback, options = {}) => {
+  const {
+    useCapture
+  } = options
   const handleClick = e => {
-    if (ref.current && !ref.current.contains(e.target)) {
-      callback()
-    }
-  };
+
+    /**
+     * Edge case alert! We have to use ReactDOM.findDOMNode to make sure .contains reflects the DOM and not react's virtual dom.
+     *
+     * `findDOMNode` will give us the underly node
+     */
+    if (!ref.current || ReactDOM.findDOMNode(ref.current).contains(e.target)) return
+    else callback()
+  }
 
   useEffect(() => {
-    document.addEventListener("click", handleClick)
+    document.addEventListener('click', handleClick, Boolean(useCapture))
 
     return () => {
-      document.removeEventListener("click", handleClick)
-    };
-  });
-};
+      document.removeEventListener('click', handleClick, Boolean(useCapture))
+    }
+  }, [ref, callback])
+}
 
-export default useOutsideClick;
+export default useOnOutsideClick
