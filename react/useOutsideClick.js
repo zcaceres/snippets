@@ -7,14 +7,16 @@ import ReactDOM from 'react-dom'
  * Given a `targetRef` listen for clicks where clicked node is not contained within the `targetRef.current`, then invoke `handler`.
  *
  * Optionally `useCapture` via `options`.
+ * Optionally `useMouseDown` via `options`
  *
  * @param {Object} targetRef React ref object
  * @param {Function} handler function to invoke on outside click
- * @param {Object} options for extensibility, pass { useCapture } to capture event
+ * @param {Object} options for extensibility, pass { useCapture } to capture event or useMouseDown to map click to 'mousedown' rather than 'click' event
  */
-const useOnOutsideClick = (targetRef, handler, options = {}) => {
+const useOutsideClick = (targetRef, handler, options = {}) => {
   const {
-    useCapture
+    useCapture,
+    useMouseDown
   } = options
 
   useEffect(() => {
@@ -27,12 +29,20 @@ const useOnOutsideClick = (targetRef, handler, options = {}) => {
       else handler(e)
     }
 
-    document.addEventListener('click', handleClick, Boolean(useCapture))
+    if (useMouseDown) {
+      document.addEventListener('mousedown', handleClick, Boolean(useCapture))
+    } else {
+      document.addEventListener('click', handleClick, Boolean(useCapture))
+    }
 
     return () => {
-      document.removeEventListener('click', handleClick, Boolean(useCapture))
+      if (useMouseDown) {
+        document.removeEventListener('mousedown', handleClick, Boolean(useCapture))
+      } else {
+        document.removeEventListener('click', handleClick, Boolean(useCapture))
+      }
     }
-  }, [targetRef, handler, useCapture])
+  }, [targetRef, handler])
 }
 
-export default useOnOutsideClick
+export default useOutsideClick
