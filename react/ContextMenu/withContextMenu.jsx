@@ -2,6 +2,14 @@ import React, { useState } from 'react'
 import { ContextMenuProvider } from 'components/ContextMenu/ContextMenuContext'
 import ContextMenuPortal from 'components/ContextMenu/ContextMenuPortal'
 
+function getDistanceFromTopWithScroll(e) {
+  return e.clientY + window.pageYOffset
+}
+
+function getDistanceFromLeftWithScroll(e) {
+  return e.clientX + window.pageXOffset
+}
+
 const initialState = {
   menuType: 'floating',
   options: [],
@@ -36,10 +44,30 @@ export default function WithContextMenu({ children }) {
   }) {
     return e => {
       e.preventDefault()
-      const newPosition = menuType === 'floating' ?
-        { x: e.clientX, y: e.clientY } :
-        position
-
+      let newPosition;
+      if (menuType === 'floating') {
+        newPosition = {
+          x: getDistanceFromLeftWithScroll(e),
+          y: getDistanceFromTopWithScroll(e)
+        }
+      } else if (menuType === 'fixed') {
+        if (nodeToPositionBeneath) {
+          const [x, y] = getBottomLeftXY(nodeToPositionBeneath)
+          newPosition = {
+            x,
+            y
+          }
+        } else {
+          // We use .currentTarget not .target so that only the target with the event handler is used for positioning, even if other-elements receive the onContextMenu event
+          const [x, y] = getBottomLeftXY(e.currentTarget)
+          newPosition = {
+            x,
+            y
+          }
+        }
+      } else {
+        newPosition = position
+      }
       setContextMenu({
         menuType,
         options,
