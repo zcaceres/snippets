@@ -7,11 +7,12 @@ import {
  *
  * For some cases it's better to have key bindings on the document level simply if an element is present on the page.
  *
- * @param {String} targetKey key to be matched
+ * @param {String|Array<String>} targetKeys key(s) to be matched
  * @param {Function} handler function to be called
  * @param {Object} options for extensibility
  */
-export default function useHotkey(targetKey, handler, options = {}) {
+export default function useHotkey(targetKeys, handler, options = {}) {
+  const keysToMatch = Array.isArray(targetKeys) ? targetKeys : [targetKeys]
   const {
     withCtrlKey,
     withMetaKey,
@@ -26,15 +27,15 @@ export default function useHotkey(targetKey, handler, options = {}) {
         key
       } = e
       // chord with ctrlKey
-      if (withCtrlKey && (ctrlKey && key === targetKey)) {
+      if (withCtrlKey && (ctrlKey && keysToMatch.includes(key))) {
         handler(e)
         // chord with metaKey
-      } else if (withMetaKey && (metaKey && key === targetKey)) {
+      } else if (withMetaKey && (metaKey && keysToMatch.includes(key))) {
         handler(e)
         // No chord... TODO: make this not so ugly
       } else if ((!ctrlKey && !metaKey) &&
         (!withMetaKey && !withCtrlKey) &&
-        (key === targetKey)) {
+        (keysToMatch.includes(key))) {
         handler(e)
       }
     }
@@ -53,5 +54,5 @@ export default function useHotkey(targetKey, handler, options = {}) {
       }
     }
 
-  }, [handler, options, withCtrlKey, targetKey, withMetaKey, useCapture, useKeyUpEvent])
+  }, [handler, options, withCtrlKey, targetKeys, withMetaKey, useCapture, useKeyUpEvent])
 }
