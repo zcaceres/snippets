@@ -1,6 +1,5 @@
-import {
-  useEffect
-} from 'react'
+import { useEffect } from 'react'
+import _ from 'lodash'
 
 /**
  * Written because `react-hotkeys-hooks` on npm requires that the component have focus to fire hotkeys.
@@ -18,6 +17,7 @@ export default function useHotkey(targetKeys, handler, options = {}) {
     withMetaKey,
     useCapture,
     useKeyUpEvent,
+    registerHandlerOnlyIf
   } = options
   useEffect(() => {
     function takeAction(e) {
@@ -34,16 +34,24 @@ export default function useHotkey(targetKeys, handler, options = {}) {
         handler(e)
         // No chord... TODO: make this not so ugly
       } else if ((!ctrlKey && !metaKey) &&
-        (!withMetaKey && !withCtrlKey) &&
-        (keysToMatch.includes(key))) {
+                 (!withMetaKey && !withCtrlKey) &&
+                 (keysToMatch.includes(key))) {
         handler(e)
       }
     }
 
-    if (useKeyUpEvent) {
-      document.addEventListener('keyup', takeAction, Boolean(useCapture))
-    } else {
-      document.addEventListener('keydown', takeAction, Boolean(useCapture))
+
+    /**
+     * Register handler only if:
+     * 1. user has not included any conditions via `registerHandlerOnlyIf`
+     * 2. every condition in `registerHandlerOnlyIf` is true
+     */
+    if (_.isEmpty(registerHandlerOnlyIf) || registerHandlerOnlyIf.every(condition => Boolean(condition))) {
+      if (useKeyUpEvent) {
+        document.addEventListener('keyup', takeAction, Boolean(useCapture))
+      } else {
+        document.addEventListener('keydown', takeAction, Boolean(useCapture))
+      }
     }
 
     return () => {
@@ -54,5 +62,5 @@ export default function useHotkey(targetKeys, handler, options = {}) {
       }
     }
 
-  }, [handler, options, withCtrlKey, targetKeys, withMetaKey, useCapture, useKeyUpEvent])
+  }, [handler, options, registerHandlerOnlyIf, withCtrlKey, targetKeys, withMetaKey, useCapture, useKeyUpEvent])
 }
