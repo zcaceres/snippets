@@ -40,3 +40,7 @@ export const orderArrayByProp = (arr, prop) => {
   })
 }
 
+
+export function objToTuple(obj) {
+  return Object.keys(obj).map(key => ([key, obj[key]]))
+}
